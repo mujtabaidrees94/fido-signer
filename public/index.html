@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebAuthn Demo</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      color: #333;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+    .section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+    .section h2 {
+      margin-top: 0;
+      color: #444;
+    }
+    button {
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      padding: 10px 15px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    .output {
+      background-color: #f1f1f1;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 10px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .hidden {
+      display: none;
+    }
+    .success {
+      color: #4CAF50;
+    }
+    .error {
+      color: #f44336;
+    }
+  </style>
+</head>
+<body>
+  <h1>WebAuthn Demo</h1>
+  <p>This application demonstrates WebAuthn for key generation and data signing.</p>
+  
+  <div class="section" id="registration-section">
+    <h2>1. Register a FIDO Key</h2>
+    <p>Create a new WebAuthn credential that will be used for authentication and signing.</p>
+    
+    <div>
+      <label for="username">Username:</label>
+      <input type="text" id="username" placeholder="Enter a username">
+    </div>
+    
+    <button id="register-button">Register New Key</button>
+    
+    <div id="registration-output" class="output hidden"></div>
+  </div>
+  
+  <div class="section" id="authentication-section">
+    <h2>2. Authenticate with Your Key</h2>
+    <p>Verify your identity using the registered WebAuthn credential.</p>
+    
+    <button id="authenticate-button" disabled>Authenticate</button>
+    
+    <div id="authentication-output" class="output hidden"></div>
+  </div>
+  
+  <div class="section" id="signing-section">
+    <h2>3. Sign Data with Your Key</h2>
+    <p>Use your WebAuthn credential to cryptographically sign arbitrary data.</p>
+    
+    <div>
+      <label for="data-to-sign">Data to Sign:</label>
+      <textarea id="data-to-sign" rows="4" placeholder="Enter data to sign" disabled></textarea>
+    </div>
+    
+    <button id="sign-button" disabled>Sign Data</button>
+    
+    <div id="signing-output" class="output hidden"></div>
+  </div>
+  
+  <div class="section" id="verification-section">
+    <h2>4. Verification Details</h2>
+    <p>Technical details about the signature verification.</p>
+    
+    <div id="verification-output" class="output hidden"></div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@simplewebauthn/browser@7.4.0/dist/bundle/index.umd.min.js"></script>
+  <script type="module" src="js/client.js"></script>
+</body>
+</html>
