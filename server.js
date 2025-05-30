@@ -11,6 +11,8 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import bodyParser from 'body-parser';
+import jwt from 'jsonwebtoken';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -18,13 +20,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'http://localhost:4433',
   credentials: true,
 }));
 app.use(express.static('public'));
 
+
 // Server configuration
-const port = 3000;
+const port = 4433;
 const rpID = 'localhost';
 const rpName = 'WebAuthn Demo';
 const expectedOrigin = `http://${rpID}:${port}`;
@@ -44,6 +47,100 @@ function generateUserId() {
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+
+
+
+// Basic logger (you can replace this with a proper logging library)
+const log = {
+  warn: console.warn,
+  info: console.log
+};
+
+const hmacSecret = Buffer.from('supersecretkey', 'utf8');
+
+app.get('/authorize', (req, res) => {
+  try {
+    const state = req.query.state;
+
+    if (!state) {
+      log.warn('Missing state in request');
+      return res.status(400).send('Missing state');
+    }
+
+    log.info(`Received login initiation with state: ${state}`);
+
+    // Respond immediately
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('Error generating registration options:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+app.post('/consent', (req, res) => {
+  const state = req.query.state;
+
+  if (!state) {
+    log.warn('Missing state in request');
+    return res.status(400).send('Missing state');
+  }
+
+  log.info(`Received consent initiation with state: ${state}`);
+
+  // Simulated auth code — replace with dynamic generation or fetch from Hydra in real scenarios
+  const authCode = 'xxxxxxxxxxxxxxxxxx';
+
+  // Build the callback URL
+  const callbackURL = `http://localhost:3000/login/complete?state=${encodeURIComponent(state)}&auth_code=${authCode}`;
+
+  // Redirect to client
+  res.redirect(302, callbackURL);
+  log.info(`Redirect done`);
+
+});
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+app.post('/token', (req, res) => {
+
+  log.info(`Received token request`);
+
+    const authCode = req.body.code;
+    log.info(`Received token request with authcode: ${authCode}`);
+
+    if (!authCode) {
+        console.warn("Missing auth_code in request body");
+        return res.status(400).send("Missing auth_code");
+    }
+
+    console.info(`Received token request with state: ${authCode}`);
+
+    // Create fake JWT
+    const tokenPayload = {
+        sub: "user123",
+        email: "test@example.com",
+        iat: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + (10 * 60), // 10 minutes from now
+        iss: "http://fido-idp",
+        aud: "client-id"
+    };
+
+    try {
+        const tokenString = jwt.sign(tokenPayload, hmacSecret, { algorithm: 'HS256' });
+        console.info("Generated ID token:", tokenString);
+
+        res.status(200).json({
+            id_token: tokenString
+        });
+    } catch (err) {
+        console.error("JWT signing failed:", err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 
 // Create a new user and generate registration options
 app.post('/api/register/begin', async (req, res) => {
